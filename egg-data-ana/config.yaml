@@ -1,0 +1,43 @@
+win_main_dir: 'E:/Work/Dropbox (CITP)/Egg_Counter_LOC_Submission/'
+mac_main_dir: '/Users/cody/Dropbox (CITP)/Egg_Counter_LOC_Submission/'
+sub_dirs:
+  resample_data: 'ParameterEstimateResampleData/'
+  data: 'Figshare File Organization/Data/'
+  figs: 'Figures/'
+
+ec_log_file_name: 'EC Experiment Log Final.xlsx'
+
+# Rows that somehow break everything in the epoch change analysis.
+# Format: Temperature, Rig name, Date, Lane number
+bad_rows:
+  - ['15C', 'Emu', '2021-09-09', 25]
+
+colors:
+  - '#660099' # 15C
+  - '#0033CC' # 17.5C
+  - '#00CC00' # 20C
+  - '#FF9900' # 22.5C
+  - '#FF0000' # 25C
+
+ec_data_load_settings:
+  quantile: 0.95
+  min_eggs_num: 40
+
+epoch_sep_settings:
+  quantile: 0.95
+  slope_diff: 2.0
+
+set_temps:
+  - '15C'
+  - '17.5C'
+  - '20C'
+  - '22.5C'
+  - '25C'
+
+save_pic_flags:
+  png: True
+  svg: True
+
+wrong_temp_sets:
+  - ['Murre', '2021-08-28', '20C']
+  - ['Falcon', '2021-09-17', '20C']
