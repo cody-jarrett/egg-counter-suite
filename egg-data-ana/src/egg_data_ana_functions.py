@@ -809,11 +809,14 @@ def randomized_parameter_test(
 
         fig.add_vline(x=gT, line_width=2, line_dash="dash", line_color="black")
 
-        fig.update_layout(
-            width=1000, height=600, showlegend=False, title_text=title
+        fig = setup_figure(
+            fig,
+            width=1000,
+            height=600,
+            show_legend=False,
+            title=title,
+            y_title="Frequency",
         )
-
-        fig.update_yaxes(title_text="Frequency")
 
         if plot_settings["save_svg"]:
             svg_save_loc = plot_settings["svg_save_loc"]
