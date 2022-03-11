@@ -23,14 +23,14 @@ from matplotlib.pyplot import figure
 
 def access_csv(file_str: str, data: list, usage_str: str):
     """
-    It takes a string that represents the file name, a list of lists that represents the data, and a
+    Takes a string that represents a file name, a list of lists that represents the data, and a
     string that represents the usage of the file. It then opens the file, writes the data to the file,
     and closes the file
 
     Args:
-      file_str (str): the name of the file you want to write to.
+      file_str (str): the name of the file you want to write to
       data (list): list of lists
-      usage_str (str): "w" means write, "a" means append.
+      usage_str (str): "w" means write, "a" means append
     """
     with open(file_str, usage_str, newline="") as file:
         writer = csv.writer(file, delimiter=",")
@@ -44,11 +44,10 @@ def add_anomaly_data(egg_data: pd.DataFrame) -> pd.DataFrame:
     results of running the breakpoint analysis on each row
 
     Args:
-      egg_data (pd.DataFrame): The dataframe containing the egg temperature data
+      egg_data (pd.DataFrame): the dataframe containing the egg temperature data
 
     Returns:
       A dataframe with the following columns added:
-        - SetTemp
         - PreSlope
         - PostSlope
         - Ratio
@@ -76,6 +75,7 @@ def add_anomaly_data(egg_data: pd.DataFrame) -> pd.DataFrame:
         out_list = [val for key, val in out_dict.items()]
         df.loc[i] = out_list
 
+    # SetTemp col already exists in original DataFrame
     df = df.drop(["SetTemp"], axis=1)
 
     egg_data = pd.concat([egg_data, df], axis=1)
@@ -89,16 +89,16 @@ def apply_percentile_cutoff(
     qt: float,
 ) -> pd.DataFrame:
     """
-    Given a dataframe of egg counts, a list of temperatures, and a quantile threshold,
+    Given the main egg data dataframe, a list of temperatures, and a quantile threshold,
     this function will return a dataframe of egg counts with the specified quantile removed
 
     Args:
-      egg_data (pd.DataFrame): The dataframe containing the egg data
+      egg_data (pd.DataFrame): the dataframe containing the egg data
       set_temps (list): list of temperatures to apply the cutoff to
       qt (float): float
 
     Returns:
-      A dataframe with the quantile removed data.
+      A dataframe with the quantile removed data
     """
     qt_rm_dfs = []
     for t in set_temps:
@@ -129,10 +129,13 @@ def apply_percentile_cutoff(
 
 def conv_str_series_data(str_series: str) -> list:
     """
-    Given a list of intervals, estimate the parameters of the model
+    Convert a string of comma separated values into a list of floats
 
-    :param str_series: the series of intervals
-    :return: a list of three values: p, l_1, and l_2.
+    Args:
+      str_series (str): the string that you want to convert to a list
+
+    Returns:
+      A list of floats
     """
     str_list = str_series.strip("[]").split(",")
     float_list = [float(x) for x in str_list]
@@ -148,17 +151,17 @@ def detect_anomaly(
     ratio is exactly 1.0, then the decision is to keep both
 
     Args:
-        ratio (float): The ratio of the number of eggs in the pre-section to the number of eggs in the
-    post-section.
-        pre_eggs_list (list): list of the number of eggs in each section of the pre-eggs
-        post_eggs_list (list): list of eggs detected in the post-hatch section
+        ratio (float): ratio of the number of eggs in the pre-section to the number of eggs in the
+    post-section
+        pre_eggs_list (list): list of eggs in the pre section
+        post_eggs_list (list): list of eggs in the post section
 
     Returns:
-        A dictionary with the following keys:
+      A dictionary with the following keys:
         - decision: string, either "Keep Pre", "Keep Post", or "Keep Neither"
         - pre_keep_flag: boolean, True if pre_eggs_list should be kept
         - post_keep_flag: boolean, True if post_eggs_list should be kept
-        - anom_flag
+        - anom_flag: boolean, True if worm is considered to have an anomalous region
     """
     anomaly_flag = False
     decision = "Regular"
@@ -193,14 +196,15 @@ def estimate_parameters(
     raw_intervals: pd.Series, iterations: int = 100
 ) -> list:
     """
-    Given a series of intervals, estimate the parameters of the double-exponential distribution
+    Given a series of intervals, estimate the parameters of a double-exponential distribution
+    fit to the interval data
 
     Args:
-      raw_intervals (pd.Series): The raw intervals of the data.
-      iterations (int): the number of iterations to run the EM algorithm for. Defaults to 100
+      raw_intervals (pd.Series): the raw intervals of the data
+      iterations (int): the number of iterations to run the EM algorithm for
 
     Returns:
-      a list of 3 parameter estimates: p, l_1, l_2.
+      a list of 3 parameter estimates: p, l_1, l_2
     """
     model = EMM(k=2, n_iter=iterations)
     pi, mu = model.fit(raw_intervals)
@@ -240,7 +244,9 @@ def get_longest_normal_vec_info(
       line_vec_norm (float): the norm of the line vector
 
     Returns:
-      The index of the point furthest from the line, and the projections of the points onto the line.
+      A tuple, with the following values:
+        - idx: the index of the point furthest from the line
+        - projs: the projections of the points onto the line
     """
     projs = []
     orth_norms = []
@@ -263,7 +269,8 @@ def get_param_error_arrays(
 ) -> list:
     """
     Given a file string, a parameter, an estimates dataframe, and a list of temperatures,
-    return two arrays, one for the upper error bars and one for the lower error bars.
+    return two arrays, one for the upper error bars and one for the lower error bars for
+    a bar graph of parameter estimates
 
     Args:
       file_str (str): the file name of the bootstrap data
@@ -272,7 +279,9 @@ def get_param_error_arrays(
       temps (list): list of temperatures
 
     Returns:
-      List of lists with two arrays, one for the upper error bar and one for the lower error bar.
+      List of lists with two arrays:
+        - array_plus: values for the upper error bars
+        - array_minus: values for the lower error bars
     """
     upper_qt = 0.975
     lower_qt = 0.025
@@ -302,18 +311,18 @@ def get_param_error_arrays(
     return [array_plus, array_minus]
 
 
-def get_pool_estimates(set_temps: list, pooled_dict: list) -> dict:
+def get_pool_estimates(set_temps: list, pooled_dict: dict) -> dict:
     """
     Given a list of temperatures and a dictionary of intervals,
     return a dictionary of estimates for the temperatures
 
     Args:
       set_temps (list): list of temperatures to estimate parameters for
-      pooled_dict (list): a dictionary of pd.Series, where the keys are temperatures and the
+      pooled_dict (dict): a dictionary of pd.Series, where the keys are temperatures and the
     values are pd.Series of egg lay interval data
 
     Returns:
-      A dictionary with temperatures as keys and a list of parameter estimates as values.
+      A dictionary with temperatures as keys and a list of parameter estimates as values
     """
     est_dict = dict.fromkeys(set_temps, [])
 
@@ -338,13 +347,13 @@ def get_regular_intervals(
     the whole egg-laying trajectory is considered "regular".
 
     Args:
-      pre_sfes (list): list of pre-sleep fes
-      post_sfes (list): list of the sfes in the post-intervention period
-      pre_keep_flag (bool): True if you want to include pre-SFES intervals in the regular intervals
-      post_keep_flag (bool): True if you want to keep the post-SFES intervals
+      pre_sfes (list): list of pre region SFES
+      post_sfes (list): list of post region SFES
+      pre_keep_flag (bool): True if the pre region intervals are considered regular
+      post_keep_flag (bool): True if the post region intervals are considered regular
 
     Returns:
-      A list of regular intervals.
+      A list of intervals considered regular
     """
     reg_intervals = []
 
@@ -380,7 +389,7 @@ def get_windowed_egg_counts(row: pd.Series) -> pd.DataFrame:
       row (pd.Series): pd.Series
 
     Returns:
-      A dataframe with the time bins and the number of eggs laid in each bin.
+      A dataframe with the time bins and the number of eggs laid in each bin
     """
     # Get date (for helping keep track of the relative times)
     date = row.Date
@@ -444,7 +453,7 @@ def load_ec_log(
     file_path: str,
     bad_rows: list,
     wrong_temp_sets: list,
-    min_eggs_num: int = 10,
+    min_eggs_num: int = 40,
 ) -> pd.DataFrame:
     """
     Loads the egg counter data excel file, slices out the extra header rows, drops text cols,
@@ -452,13 +461,16 @@ def load_ec_log(
     breakpoint analysis, and adds an Experiment column
 
     Args:
-      file_path (str): The path to the excel file.
-      bad_rows (list): list
-      wrong_temp_sets (list): list = [
-      min_eggs_num (int): int = 10. Defaults to 10
+      file_path (str): the path to the excel file
+      bad_rows (list): list with experiment details of rows that break the analysis
+      wrong_temp_sets (list): list with experiment details of rows for which the experiment was
+        assigned one temperature, but actually recorded at a different temperature due to a
+        system glitch
+      min_eggs_num (int): minimum number of eggs a worm must have laid during an experiment to
+        keep the worm for analysis
 
     Returns:
-      A dataframe with the egg counter log columns, and an added Experiment column
+      A dataframe with the egg counter data, and an added Experiment column
     """
     # Load all worksheets (all temperatures) with sheet_name=None
     data_dict = pd.read_excel(
@@ -528,7 +540,7 @@ def normalize_tiny_intervals(intervals: list) -> list:
       intervals (list): list of intervals to normalize
 
     Returns:
-      A list of intervals.
+      A list of intervals with values < 0 set to 1, and all values rounded to the nearest whole number
     """
     intervals = [round(x, 0) for x in intervals]
     for i, item in enumerate(intervals):
@@ -602,7 +614,7 @@ def plot_param_bar_graph(
     """
     Given a file containing resampled interval data, a parameter to graph, a dataframe of estimates, a
     list of temperatures, a title, a list of colors, a dictionary of flags for saving the figures, and a
-    directory for saving the figures, plot the parameter estimates as a bar graph with error bars.
+    directory for saving the figures, plot the parameter estimates as a bar graph with error bars
 
     Args:
       resamples_file_str (str): path to the resampled interval data file
@@ -613,8 +625,8 @@ def plot_param_bar_graph(
       colors (list): list of colors for the bars
       save_pic_flags (dict): flags that control whether to save pictures
       figs_dir (str): directory of where to save pictures
-      width (int): figure width, defaults to 1200
-      height (int): figure height, defaults to 600
+      width (int): figure width
+      height (int): figure height
     """
     err_arrays = get_param_error_arrays(
         resamples_file_str, param, est_df, temps
@@ -659,10 +671,10 @@ def pool_intervals(
     Args:
       set_temps (list): list of temperatures for which you want to pool intervals
       t_dfs (list): list of dataframes
-      reg_epoch_flag (bool): If True, then the regular epochs are used. Defaults to False
+      reg_epoch_flag (bool): If True, then the regular epochs are used
 
     Returns:
-      A dictionary of pd.Series objects.
+      A dictionary of pd.Series objects
     """
     pooled_dict = {}
 
@@ -696,6 +708,51 @@ def randomized_parameter_test(
     plot_stuff: bool = False,
     verbose: bool = False,
 ):
+    """
+    Conducts a randomization-based hypothesis test of whether the mean estimate of a parameter
+    is the same between two temperature sets. It takes in the egg data dataframme, a parameter,
+    and two temperatures to compare. Then it applies the following algorithm:
+
+    1.) Calculate the mean of the parameter for both temperatures
+
+    2.) Calculate the difference between the two means
+
+    3.) Shuffle the data (re-assign the temperature of each data point) with replacement, and
+    re-calculate the mean of the newly assigned parameter for both temperatures. Do this
+    permutation_total times.
+
+    5.) Calculate the difference between the two shuffled means (the "test statistic"). Store the
+    test statistic in a list.
+
+    6.) Calculate the randomization-based hypothesis test p-value of the test statistics
+    and the observed ("ground truth") difference between the means.
+
+    7.) If plot_stuff is True, plot the histogram of the test statistics with a vertical line where
+    the observed difference occurs.
+
+    8.) Returns a list of the number of samples in each temperature, the means of the
+    parameter of interest for each temperature, the actual difference between the two means,
+    the p-value of the test
+
+    Args:
+      egg_data (pd.DataFrame): egg data DataFrame
+      param (str): parameter to compare temperature data for
+      t1 (str): first temperature to compare
+      t2 (str): temperature that you want to compare to t1
+      plot_settings (dict): settings for whether to save plot as image files
+      permutation_total (int): total number of shuffle permutations to conduct
+      plot_stuff (bool): True if user wants to plot test results
+      verbose (bool): True if user wants to print textual test info
+
+    Returns:
+      A list of the following values:
+        - df1_len: int, number of observations in the first temperature
+        - df2_len: int, number of observations in the second temperature
+        - mean1: float, mean of the parameter estimates for the first temperature
+        - mean2: float, mean of the parameter estimates for the second temperature
+        - gT: float, ground truth difference between the parameter means
+        - p_val: float, p_value of the hypothesis test
+    """
     temps = [t1, t2]
 
     dfs = [egg_data[egg_data["SetTemp"] == t] for t in temps]
@@ -783,6 +840,27 @@ def run_breakpoint_analysis(
     figs_dir: str = "",
     save_pic_flags: dict = {},
 ) -> dict:
+    """
+    Takes in a row of the dataframe, performs a custom "breakpoint" analysis,
+    and returns a dictionary of the analysis results
+
+    Args:
+      row (pd.Series): egg data dataframe row
+      plot_analysis (bool): True if user wants to plot a graph of the analysis
+      title (str): plot title
+      figs_dir (str): the directory where you want to save the plots
+      save_pic_flags (dict): flags that control whether to save pictures
+
+    Returns:
+      A dictionary with the following keys:
+        - t: str, the temperature of the experiment
+        - pre_s: float, the slope of the pre-epoch linear fit
+        - post_s: float, the slope of the post-epoch linear fit
+        - ratio: float, the ratio of the slopes
+        - anom_flag: boolean, True if worm is considered to have an anomalous region
+        - anom_epoch: str, which epoch is considered anomalous, if one is
+        - reg_intervals: list, intervals that are considered "regular"
+    """
 
     t = row.SetTemp
 
@@ -932,13 +1010,13 @@ def run_breakpoint_analysis(
 
 def save_pics(fig: Figure, figs_dir: str, title: str, save_pic_flags: dict):
     """
-    Save a figure to files
+    Save a figure to .png and .svg files
 
     Args:
       fig (Figure): Figure
-      figs_dir (str): The directory where the figures will be saved
-      title (str): The title of the plot
-      save_pic_flags (dict): dict
+      figs_dir (str): the directory where the figures will be saved
+      title (str): the title of the plot
+      save_pic_flags (dict): contains values of flags for controlling image saving
     """
     if save_pic_flags["png"]:
         fig.write_image(f"{figs_dir}/PNGs/{title}.png")
@@ -956,6 +1034,22 @@ def setup_figure(
     x_title: str = "",
     y_title: str = "",
 ) -> Figure:
+    """
+    Update a plotly figure's general parameters for standardized plots
+    and cleaner code
+
+    Args:
+      fig (Figure): Figure
+      width (int): figure width
+      height (int): figure height
+      show_legend (bool): whether to show the legend
+      title (str): plot title
+      x_title (str): x-axis title
+      y_title (str): y-axis title
+
+    Returns:
+      An updated figure object
+    """
     fig.update_layout(
         width=width,
         height=height,
@@ -989,15 +1083,15 @@ def setup_pooled_estimates_for_graphing(
     est_dict: dict, params: list
 ) -> pd.DataFrame:
     """
-    This function takes a dictionary of estimates and a list of parameters and returns a dataframe of
+    Takes a dictionary of estimates and a list of parameters and returns a dataframe of
     estimates
 
     Args:
       est_dict (dict): a dictionary of the estimates
-      params (list): list = ['p', 'lambda1', 'lambda2']
+      params (list): list of parameters for double-exponential model
 
     Returns:
-      A dataframe with the following columns:
+      A long dataframe with the following columns:
         - Temperature
         - Estimate for each parameter
     """
