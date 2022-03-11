@@ -566,7 +566,7 @@ def plot_kde(
       colors (list): list of color hex codes
       title (str): plot title
       save_pic_flags (dict): flags that control whether to save pictures
-      figs_dir (str): directory of where to save pictures
+      figs_dir (str): directory to save pictures in
       width (int): figure width
       height (int): figure height
     """
@@ -624,7 +624,7 @@ def plot_param_bar_graph(
       title (str): figure title
       colors (list): list of colors for the bars
       save_pic_flags (dict): flags that control whether to save pictures
-      figs_dir (str): directory of where to save pictures
+      figs_dir (str): directory to save pictures in
       width (int): figure width
       height (int): figure height
     """
@@ -703,8 +703,8 @@ def randomized_parameter_test(
     param: str,
     t1: str,
     t2: str,
-    figs_dir: str,
     save_pic_flags: dict,
+    figs_dir: str,
     permutation_total: int = 1000,
     plot_stuff: bool = False,
     verbose: bool = False,
@@ -740,7 +740,8 @@ def randomized_parameter_test(
       param (str): parameter to compare temperature data for
       t1 (str): first temperature to compare
       t2 (str): temperature that you want to compare to t1
-      plot_settings (dict): settings for whether to save plot as image files
+      save_pic_flags (dict): settings for whether to save plot as image files
+      figs_dir (str): directory to save pictures in
       permutation_total (int): total number of shuffle permutations to conduct
       plot_stuff (bool): True if user wants to plot test results
       verbose (bool): True if user wants to print textual test info
