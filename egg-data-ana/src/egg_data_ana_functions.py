@@ -703,7 +703,8 @@ def randomized_parameter_test(
     param: str,
     t1: str,
     t2: str,
-    plot_settings: dict,
+    figs_dir: str,
+    save_pic_flags: dict,
     permutation_total: int = 1000,
     plot_stuff: bool = False,
     verbose: bool = False,
@@ -818,18 +819,8 @@ def randomized_parameter_test(
             y_title="Frequency",
         )
 
-        if plot_settings["save_svg"]:
-            svg_save_loc = plot_settings["svg_save_loc"]
-            fig.write_image(
-                f"{svg_save_loc}/Pairwise Randomized Tests/{file_title}.svg",
-                engine="kaleido",
-            )
-
-        if plot_settings["save_png"]:
-            png_save_loc = plot_settings["png_save_loc"]
-            fig.write_image(
-                f"{png_save_loc}/Pairwise Randomized Tests/{file_title}.png"
-            )
+        pic_loc_title = f"Pairwise Randomized Tests/{title}"
+        save_pics(fig, figs_dir, pic_loc_title, save_pic_flags)
 
         fig.show()
 
