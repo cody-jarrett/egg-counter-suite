@@ -1,3 +1,10 @@
+"""
+User Interface layout file for the meta GUI of the egg-vid-get software
+
+Author: Cody Jarrett
+Organization: Phillips Lab, Institute of Ecology and Evolution,
+              University of Oregon
+"""
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'egg_vid_get_meta_gui.ui'
@@ -7,6 +14,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -71,7 +79,9 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(10)
         self.setATableWidget.setFont(font)
-        self.setATableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setATableWidget.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff
+        )
         self.setATableWidget.setObjectName("setATableWidget")
         self.setATableWidget.setColumnCount(1)
         self.setATableWidget.setRowCount(16)
@@ -117,7 +127,9 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(10)
         self.setBTableWidget.setFont(font)
-        self.setBTableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setBTableWidget.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff
+        )
         self.setBTableWidget.setObjectName("setBTableWidget")
         self.setBTableWidget.setColumnCount(1)
         self.setBTableWidget.setRowCount(16)
@@ -250,7 +262,11 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(10)
         self.purposeLine.setFont(font)
-        self.purposeLine.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.purposeLine.setAlignment(
+            QtCore.Qt.AlignLeading
+            | QtCore.Qt.AlignLeft
+            | QtCore.Qt.AlignVCenter
+        )
         self.purposeLine.setObjectName("purposeLine")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -267,10 +283,14 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.groupBox.setTitle(_translate("MainWindow", "Set A (1-16) Condition"))
+        self.groupBox.setTitle(
+            _translate("MainWindow", "Set A (1-16) Condition")
+        )
         self.setABacteriaLabel.setText(_translate("MainWindow", "Bacteria:"))
         self.setAWormsLabel.setText(_translate("MainWindow", "Worms:"))
-        self.groupBox_2.setTitle(_translate("MainWindow", "Set B (17-32) Condition"))
+        self.groupBox_2.setTitle(
+            _translate("MainWindow", "Set B (17-32) Condition")
+        )
         self.setBBacteriaLabel.setText(_translate("MainWindow", "Bacteria:"))
         self.setBWormsLabel.setText(_translate("MainWindow", "Worms:"))
         item = self.setATableWidget.verticalHeaderItem(0)
@@ -341,10 +361,15 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "32"))
         item = self.setBTableWidget.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "Set B"))
-        self.wormPositionLabel.setText(_translate("MainWindow", "Worm Position"))
-        self.saveMetadataButton.setText(_translate("MainWindow", "Save Metadata"))
+        self.wormPositionLabel.setText(
+            _translate("MainWindow", "Worm Position")
+        )
+        self.saveMetadataButton.setText(
+            _translate("MainWindow", "Save Metadata")
+        )
         self.strainLabel.setText(_translate("MainWindow", "Strain:"))
         self.chipLabel.setText(_translate("MainWindow", "Chip #:"))
-        self.tempProfileLabel.setText(_translate("MainWindow", "Temp Profile:"))
+        self.tempProfileLabel.setText(
+            _translate("MainWindow", "Temp Profile:")
+        )
         self.purposeLabel.setText(_translate("MainWindow", "Purpose:"))
-

@@ -1,3 +1,11 @@
+"""
+Software for running experiments and collecting data from Egg Counter
+devices developed in the Phillips Lab at the University of Oregon
+
+Author: Cody Jarrett
+Organization: Phillips Lab, Institute of Ecology and Evolution,
+              University of Oregon
+"""
 import os
 import sys
 import csv
@@ -16,15 +24,18 @@ from PyQt5.QtCore import QThread, Qt, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
 
-VER_STR = 'v2.1'
+VER_STR = "v2.1"
 
-RIG_NAME = 'Coruscant'
-MAIN_DIR = '/media/birdname/Elements/ec_main_dir/'
+global dac_setting
+dac_setting = 0
+
+RIG_NAME = "Coruscant"
+MAIN_DIR = "/media/birdname/Elements/ec_main_dir/"
 DEFAULT_VOLTAGE = 1550
 
-EXPERIMENTS_DIR = MAIN_DIR + 'experiment_data/'
+EXPERIMENTS_DIR = MAIN_DIR + "experiment_data/"
 
-SERIAL_PATH = '/dev/ttyUSB0'
+SERIAL_PATH = "/dev/ttyUSB0"
 BAUD = 115200
 TIMEOUT = 1
 THERMISTOR_CONSTANTS = [1.1279e-3, 2.3429e-4, 8.7298e-8]
@@ -33,20 +44,7 @@ ADC_SAMPLE_PERIOD = 5  # Seconds
 
 MIN_TEMP = 0
 MAX_TEMP = 50
-DEFAULT_TEMPERATURE = '20C'
-
-global dac_setting
-dac_setting = 0
-
-try:
-    with open(MAIN_DIR + 'temp_profiles/' +
-              DEFAULT_TEMPERATURE + '.txt') as file:
-        dac_setting = file.read().strip()
-    print(f'\nDefault temperature: {DEFAULT_TEMPERATURE}')
-    print(f'Voltage: {dac_setting}')
-except Exception:
-    print(f'\nCould not read {DEFAULT_TEMPERATURE} file and set '
-          'initial DAC voltage. Does the file exist?')
+DEFAULT_TEMPERATURE = "20C"
 
 MAX_CONTOURS = 6
 BINARY_THRESH = 15
@@ -60,57 +58,72 @@ TIMER_PRECISION = 5
 VIDEO_HOURS = 12
 SEC_PER_VIDEO = int(VIDEO_HOURS * 60 * 60)
 
-CNT_EXT = '_contours.csv'
+CNT_EXT = "_contours.csv"
+
+try:
+    with open(
+        MAIN_DIR + "temp_profiles/" + DEFAULT_TEMPERATURE + ".txt"
+    ) as file:
+        dac_setting = file.read().strip()
+    print(f"\nDefault temperature: {DEFAULT_TEMPERATURE}")
+    print(f"Voltage: {dac_setting}")
+except Exception:
+    print(
+        f"\nCould not read {DEFAULT_TEMPERATURE} file and set "
+        "initial DAC voltage. Does the file exist?"
+    )
 
 config = configparser.ConfigParser()
-config.read(MAIN_DIR + 'egg_counter_config.ini')
+config.read(MAIN_DIR + "egg_counter_config.ini")
 
 runtime_options = []
-for key in config['Runtimes']:
-    val = config['Runtimes'][f'{key}']
+for key in config["Runtimes"]:
+    val = config["Runtimes"][f"{key}"]
     runtime_options.append(val)
 
 exposure_options = []
-for key in config['CamExposures']:
-    val = config['CamExposures'][f'{key}']
+for key in config["CamExposures"]:
+    val = config["CamExposures"][f"{key}"]
     exposure_options.append(val)
 
 temp_profiles = []
-for profile in os.listdir(MAIN_DIR + 'temp_profiles/'):
+for profile in os.listdir(MAIN_DIR + "temp_profiles/"):
     name, ext = os.path.splitext(profile)
     temp_profiles.append(name)
 
-meta_fields = ['FileName',
-               'StartDate',
-               'StartTime',
-               'RunTime',
-               'EndDate',
-               'TempProfile',
-               'ChipNum',
-               'RigName',
-               'Purpose',
-               'SetABacteria',
-               'SetAWorms',
-               'SetBBacteria',
-               'SetBWorms',
-               ]
+meta_fields = [
+    "FileName",
+    "StartDate",
+    "StartTime",
+    "RunTime",
+    "EndDate",
+    "TempProfile",
+    "ChipNum",
+    "RigName",
+    "Purpose",
+    "SetABacteria",
+    "SetAWorms",
+    "SetBBacteria",
+    "SetBWorms",
+]
 
-cnt_header = ['VidNum',
-              'VidTime',
-              'FrameNum',
-              'X',
-              'Y',
-              'Area',
-              'Perimeter',
-              'Aspect',
-              'Extent',
-              'Pe/Ex',
-              'Ar/Ex',
-              'As/Ex',
-              ]
+cnt_header = [
+    "VidNum",
+    "VidTime",
+    "FrameNum",
+    "X",
+    "Y",
+    "Area",
+    "Perimeter",
+    "Aspect",
+    "Extent",
+    "Pe/Ex",
+    "Ar/Ex",
+    "As/Ex",
+]
 
-set_a_worm_position_names = [f'SetAWorm{i}' for i in range(1, 17)]
-set_b_worm_position_names = [f'SetBWorm{i}' for i in range(17, 33)]
+set_a_worm_position_names = [f"SetAWorm{i}" for i in range(1, 17)]
+set_b_worm_position_names = [f"SetBWorm{i}" for i in range(17, 33)]
 meta_fields.extend(set_a_worm_position_names)
 meta_fields.extend(set_b_worm_position_names)
 
@@ -118,7 +131,7 @@ global experiment_flag
 experiment_flag = False
 
 global experiment_name
-experiment_name = ''
+experiment_name = ""
 
 temp_collect_flag = False
 meta_vals_temp_list = []
@@ -132,8 +145,13 @@ auto_exposure = 3
 exposure = 625
 
 
+# The ArduinoThread class is a QThread that
+# communicates with an Arduino over a serial connection. It has a voltage attribute, a
+# temp_data_file_str attribute, and a ser attribute. The voltage attribute is an int that
+# represents the voltage that the Arduino should output. The temp_data_file_str attribute
+# is a string that represents the file path to the temperature data file. The ser attribute
+# is a serial object that represents the serial connection to the Arduino.
 class ArduinoThread(QThread):
-
     def __init__(self, voltage, temp_data_file_str, parent=None):
         super(ArduinoThread, self).__init__(parent)
 
@@ -148,8 +166,8 @@ class ArduinoThread(QThread):
     def read_temp(self):
         readings_list = list(range(ADC_SAMPLE_NUM))
         for i in range(ADC_SAMPLE_NUM):
-            self.ser.write('R'.encode('ascii'))
-            line = self.ser.readline().decode('ascii').strip()
+            self.ser.write("R".encode("ascii"))
+            line = self.ser.readline().decode("ascii").strip()
             readings_list[i] = int(line)
             time.sleep(0.001)
         avg_reading = sum(readings_list) / ADC_SAMPLE_NUM
@@ -159,76 +177,79 @@ class ArduinoThread(QThread):
         return self.temp_convert(res), volts
 
     def set_dac_voltage(self, value):
-        self.ser.write('S'.encode('ascii'))
-        packedValue = struct.pack('<l', value)
+        self.ser.write("S".encode("ascii"))
+        packedValue = struct.pack("<l", value)
         self.ser.write(packedValue)
-        print(f'Voltage: {value}')
+        print(f"Voltage: {value}")
 
     def temp_convert(self, res):
         term2 = THERMISTOR_CONSTANTS[1] * np.log(res)
-        term3 = (THERMISTOR_CONSTANTS[2] *
-                 np.log(res) *
-                 np.log(res) *
-                 np.log(res))
+        term3 = (
+            THERMISTOR_CONSTANTS[2] * np.log(res) * np.log(res) * np.log(res)
+        )
         tempK = 1.0 / (THERMISTOR_CONSTANTS[0] + term2 + term3)
         tempC = round((tempK - 273.15), 2)
         return tempC
 
     def test_connection(self):
-        self.ser.write('T'.encode('ascii'))
-        line = self.ser.readline().decode('ascii').strip()
+        self.ser.write("T".encode("ascii"))
+        line = self.ser.readline().decode("ascii").strip()
         if line is not None:
-            return 'OK'
+            return "OK"
         else:
-            return 'NC'
+            return "NC"
 
     def run(self):
         global experiment_flag
-        if self.test_connection() == 'OK':
-            print('\nArduino connection established')
+        if self.test_connection() == "OK":
+            print("\nArduino connection established")
             if experiment_flag:
 
                 self.set_dac_voltage(self.voltage)
                 time.sleep(1)
 
                 try:
-                    print('\nTaking test temperature reading...')
+                    print("\nTaking test temperature reading...")
                     temp, volts = self.read_temp()
                     if (temp < MAX_TEMP) and (temp > MIN_TEMP):
-                        print('Test temperature reading good')
-                        print('\nArduino logging started')
+                        print("Test temperature reading good")
+                        print("\nArduino logging started")
                     else:
-                        print('\nTemperature out of range. Ending experiment.'
-                              '\nPlease check that the temperature controller'
-                              '\nis powered on and re-start the experiment.')
+                        print(
+                            "\nTemperature out of range. Ending experiment."
+                            "\nPlease check that the temperature controller"
+                            "\nis powered on and re-start the experiment."
+                        )
                         experiment_flag = False
                 except Exception:
-                    print('\nMath domain error. Temperature out of range.'
-                          '\nEnding experiment. Please check that the'
-                          '\ntemperature controller is powered on and'
-                          '\nre-start the experiment.')
+                    print(
+                        "\nMath domain error. Temperature out of range."
+                        "\nEnding experiment. Please check that the"
+                        "\ntemperature controller is powered on and"
+                        "\nre-start the experiment."
+                    )
                     experiment_flag = False
 
                 with open(self.temp_data_file_str, "w") as file:
-                    writer = csv.writer(file, delimiter=',')
-                    writer.writerow(['Datetime', 'Temperature', 'Volts'])
+                    writer = csv.writer(file, delimiter=",")
+                    writer.writerow(["Datetime", "Temperature", "Volts"])
 
                 while experiment_flag:
                     temp, volts = self.read_temp()
                     now = str(datetime.datetime.now())[:-4]
                     with open(self.temp_data_file_str, "a") as file:
-                        writer = csv.writer(file, delimiter=',')
+                        writer = csv.writer(file, delimiter=",")
                         writer.writerow([now, temp, volts])
                     time.sleep(ADC_SAMPLE_PERIOD)
-                print('\nArduino logging stopped')
-                print('Setting voltage to 1550 (~20C)')
+                print("\nArduino logging stopped")
+                print("Setting voltage to 1550 (~20C)")
                 self.set_dac_voltage(DEFAULT_VOLTAGE)
                 self.close_connection()
             else:
                 self.set_dac_voltage(self.voltage)
                 self.close_connection()
         else:
-            print('\nArduino connection failed')
+            print("\nArduino connection failed")
 
 
 # https://stackoverflow.com/a/44404713
@@ -269,9 +290,13 @@ class CamThread(QThread):
                         rgb_img = cv.cvtColor(frame_copy, cv.COLOR_BGR2RGB)
                         h, w, ch = rgb_img.shape
                         bytes_per_line = ch * w
-                        qt_img = QImage(rgb_img.data, w, h,
-                                        bytes_per_line,
-                                        QImage.Format_RGB888)
+                        qt_img = QImage(
+                            rgb_img.data,
+                            w,
+                            h,
+                            bytes_per_line,
+                            QImage.Format_RGB888,
+                        )
                         p = qt_img.scaled(1280, 720, Qt.KeepAspectRatio)
                         self.changePixmap.emit(p)
 
@@ -281,15 +306,16 @@ class CamThread(QThread):
                 cap.release()
                 cv.destroyAllWindows()
             except Exception:
-                print('\nCould not access camera')
+                print("\nCould not access camera")
 
         else:
 
             run_days = self.runDays
-            experiment_dir = EXPERIMENTS_DIR + RIG_NAME + '/' + experiment_name
-            videos_dir = experiment_dir + '/' + experiment_name + '_Videos/'
-            video_frames_dir = (experiment_dir + '/' + experiment_name +
-                                '_VideoFrames/')
+            experiment_dir = EXPERIMENTS_DIR + RIG_NAME + "/" + experiment_name
+            videos_dir = experiment_dir + "/" + experiment_name + "_Videos/"
+            video_frames_dir = (
+                experiment_dir + "/" + experiment_name + "_VideoFrames/"
+            )
 
             cap = cv.VideoCapture(0)
 
@@ -302,17 +328,17 @@ class CamThread(QThread):
             cap.set(cv.CAP_PROP_AUTO_EXPOSURE, auto_exposure)
             cap.set(cv.CAP_PROP_EXPOSURE, exposure)
 
-            print('\nOpened camera and set parameters')
+            print("\nOpened camera and set parameters")
 
             num_videos = int(run_days * (24 / VIDEO_HOURS))
 
             cnt_file_name = experiment_name + CNT_EXT
-            cnt_file_str = experiment_dir + '/' + cnt_file_name
+            cnt_file_str = experiment_dir + "/" + cnt_file_name
 
             with open(cnt_file_str, "w") as cnt_file:
-                cnt_writer = csv.writer(cnt_file, delimiter=',')
+                cnt_writer = csv.writer(cnt_file, delimiter=",")
                 cnt_writer.writerow(cnt_header)
-                print('Created contours file')
+                print("Created contours file")
 
             experiment_timer = funcs.Timer(TIMER_PRECISION, quiet=True)
             experiment_timer.start()
@@ -320,25 +346,30 @@ class CamThread(QThread):
             for i in range(num_videos):
                 vid_num = i + 1
                 frame_num = 1
-                video_name = experiment_name + f'_video_{i+1}.avi'
+                video_name = experiment_name + f"_video_{i+1}.avi"
                 video_file_str = videos_dir + video_name
 
                 video_writer = funcs.create_video_writer(
-                               video_file_str,
-                               IMG_WIDTH,
-                               IMG_HEIGHT)
-                print('Created video writer')
+                    video_file_str, IMG_WIDTH, IMG_HEIGHT
+                )
+                print("Created video writer")
 
-                frames_name = experiment_name + f'_frames_{i+1}.csv'
+                frames_name = experiment_name + f"_frames_{i+1}.csv"
                 frames_file_str = video_frames_dir + frames_name
 
                 with open(frames_file_str, "w") as frames_file:
-                    frames_writer = csv.writer(frames_file, delimiter=',')
-                    frames_writer.writerow(['VidNum', 'FrameNum', 'PCTime',
-                                            'SecFromVidStart',
-                                            'VidPlaybackTime',
-                                            'SecFromExperimentStart'])
-                    print('\nCreated frames file for video', vid_num)
+                    frames_writer = csv.writer(frames_file, delimiter=",")
+                    frames_writer.writerow(
+                        [
+                            "VidNum",
+                            "FrameNum",
+                            "PCTime",
+                            "SecFromVidStart",
+                            "VidPlaybackTime",
+                            "SecFromExperimentStart",
+                        ]
+                    )
+                    print("\nCreated frames file for video", vid_num)
 
                 return_flag, previous_img = cap.read()
                 previous_img = cv.cvtColor(previous_img, cv.COLOR_BGR2GRAY)
@@ -357,19 +388,16 @@ class CamThread(QThread):
                     current_img = cv.cvtColor(img_copy, cv.COLOR_BGR2GRAY)
 
                     subtracted_img = funcs.subtract_images(
-                                     previous_img,
-                                     current_img)
+                        previous_img, current_img
+                    )
 
                     _, binary_img = cv.threshold(
-                                    subtracted_img,
-                                    BINARY_THRESH,
-                                    255,
-                                    cv.THRESH_BINARY)
+                        subtracted_img, BINARY_THRESH, 255, cv.THRESH_BINARY
+                    )
 
                     contours, hierarchy = cv.findContours(
-                                          binary_img,
-                                          cv.RETR_TREE,
-                                          cv.CHAIN_APPROX_SIMPLE)
+                        binary_img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE
+                    )
 
                     saved_cnt_count = 0
                     for cnt in contours:
@@ -381,8 +409,8 @@ class CamThread(QThread):
                             cnt_flag = True
                             vid_time = round(frame_num / 30.0, 2)
                             x, y, w, h = cv.boundingRect(cnt)
-                            cent_x = round(x + (w/2), 0)
-                            cent_y = round(y + (h/2), 0)
+                            cent_x = round(x + (w / 2), 0)
+                            cent_y = round(y + (h / 2), 0)
                             perimeter = round(cv.arcLength(cnt, True), 2)
                             aspect = round(float(w) / h, 2)
                             rect_area = w * h
@@ -391,46 +419,71 @@ class CamThread(QThread):
                             ar_ex = round(area / extent, 2)
                             as_ex = round(aspect / extent, 2)
 
-                            cv.rectangle(img_copy, (x, y), (x+w, y+h),
-                                         (0, 255, 0), 1)
+                            cv.rectangle(
+                                img_copy,
+                                (x, y),
+                                (x + w, y + h),
+                                (0, 255, 0),
+                                1,
+                            )
 
-                            cnt_data = [[vid_num, vid_time, frame_num, cent_x,
-                                         cent_y, area, perimeter, aspect,
-                                         extent, pe_ex, ar_ex, as_ex]]
+                            cnt_data = [
+                                [
+                                    vid_num,
+                                    vid_time,
+                                    frame_num,
+                                    cent_x,
+                                    cent_y,
+                                    area,
+                                    perimeter,
+                                    aspect,
+                                    extent,
+                                    pe_ex,
+                                    ar_ex,
+                                    as_ex,
+                                ]
+                            ]
 
-                            funcs.access_csv(cnt_file_str, cnt_data, 'a')
+                            funcs.access_csv(cnt_file_str, cnt_data, "a")
 
                     # https://stackoverflow.com/a/55468544/6622587
                     if return_flag:
-                        rgb_img = cv.cvtColor(img_copy,
-                                              cv.COLOR_BGR2RGB)
+                        rgb_img = cv.cvtColor(img_copy, cv.COLOR_BGR2RGB)
                         h, w, ch = rgb_img.shape
                         bytes_per_line = ch * w
-                        qt_img = QImage(rgb_img.data, w, h,
-                                        bytes_per_line,
-                                        QImage.Format_RGB888)
+                        qt_img = QImage(
+                            rgb_img.data,
+                            w,
+                            h,
+                            bytes_per_line,
+                            QImage.Format_RGB888,
+                        )
                         p = qt_img.scaled(1280, 720, Qt.KeepAspectRatio)
                         self.changePixmap.emit(p)
 
                     # Only check if at least one contour was detected per frame
                     # so that save only one frame
                     if cnt_flag:
-                        bgr_img = cv.cvtColor(current_img,
-                                              cv.COLOR_GRAY2BGR)
+                        bgr_img = cv.cvtColor(current_img, cv.COLOR_GRAY2BGR)
                         pc_time = str(datetime.datetime.now())
                         sec_from_vid_start = video_timer.elapsed()
-                        vid_playback_time = frame_num * (1/30)
+                        vid_playback_time = frame_num * (1 / 30)
                         sec_from_experiment_start = experiment_timer.elapsed()
 
                         with open(frames_file_str, "a") as frames_file:
-                            frames_writer = csv.writer(frames_file,
-                                                       delimiter=',')
-                            frames_writer.writerow([vid_num,
-                                                    frame_num,
-                                                    pc_time,
-                                                    sec_from_vid_start,
-                                                    vid_playback_time,
-                                                    sec_from_experiment_start])
+                            frames_writer = csv.writer(
+                                frames_file, delimiter=","
+                            )
+                            frames_writer.writerow(
+                                [
+                                    vid_num,
+                                    frame_num,
+                                    pc_time,
+                                    sec_from_vid_start,
+                                    vid_playback_time,
+                                    sec_from_experiment_start,
+                                ]
+                            )
 
                         video_writer.write(bgr_img)
                         frame_num += 1
@@ -442,15 +495,14 @@ class CamThread(QThread):
             experiment_timer.stop()
             cap.release()
             experiment_flag = False
-            print('Experiment Complete')
+            print("Experiment Complete")
 
 
 class EggVidGetMetaGUI(QMainWindow, egg_vid_get_meta_gui.Ui_MainWindow):
-
     def __init__(self, parent=None):
         super(EggVidGetMetaGUI, self).__init__(parent)
         self.setupUi(self)
-        self.setWindowTitle('Metadata Entry Form')
+        self.setWindowTitle("Metadata Entry Form")
 
         self.tempProfileBox.addItems(temp_profiles)
         self.tempProfileBox.setCurrentText(DEFAULT_TEMPERATURE)
@@ -462,10 +514,10 @@ class EggVidGetMetaGUI(QMainWindow, egg_vid_get_meta_gui.Ui_MainWindow):
     def set_temp_profile(self):
         global dac_setting
         temp_profile = self.tempProfileBox.currentText()
-        with open(MAIN_DIR + 'temp_profiles/' + temp_profile + '.txt') as file:
+        with open(MAIN_DIR + "temp_profiles/" + temp_profile + ".txt") as file:
             dac_setting = file.read().strip()
-        print(f'\nTemp profile selected: {temp_profile}')
-        print(f'Voltage: {dac_setting}')
+        print(f"\nTemp profile selected: {temp_profile}")
+        print(f"Voltage: {dac_setting}")
 
     def set_metadata(self):
         global experiment_name
@@ -473,8 +525,9 @@ class EggVidGetMetaGUI(QMainWindow, egg_vid_get_meta_gui.Ui_MainWindow):
         temp_profile = self.tempProfileBox.currentText()
         strain = self.strainLine.text()
         date = str(datetime.datetime.now().date())
-        experiment_name = (strain + '_' + temp_profile + '_' + date + '_'
-                           + RIG_NAME)
+        experiment_name = (
+            strain + "_" + temp_profile + "_" + date + "_" + RIG_NAME
+        )
         chip_num = self.chipLine.text()
         purpose = self.purposeLine.text()
         set_a_bacteria = self.setABacteriaLine.text()
@@ -482,22 +535,30 @@ class EggVidGetMetaGUI(QMainWindow, egg_vid_get_meta_gui.Ui_MainWindow):
         set_b_bacteria = self.setBBacteriaLine.text()
         set_b_worms = self.setBWormsLine.text()
         try:
-            set_a_worm_positions = [self.setATableWidget.item(r, 0).text()
-                                    for r in range(16)]
-            set_b_worm_positions = [self.setBTableWidget.item(r, 0).text()
-                                    for r in range(16)]
-            meta_vals_temp_list = [temp_profile, chip_num, RIG_NAME, purpose,
-                                   set_a_bacteria, set_a_worms, set_b_bacteria,
-                                   set_b_worms]
+            set_a_worm_positions = [
+                self.setATableWidget.item(r, 0).text() for r in range(16)
+            ]
+            set_b_worm_positions = [
+                self.setBTableWidget.item(r, 0).text() for r in range(16)
+            ]
+            meta_vals_temp_list = [
+                temp_profile,
+                chip_num,
+                RIG_NAME,
+                purpose,
+                set_a_bacteria,
+                set_a_worms,
+                set_b_bacteria,
+                set_b_worms,
+            ]
             meta_vals_temp_list.extend(set_a_worm_positions)
             meta_vals_temp_list.extend(set_b_worm_positions)
-            print('\nSet metadata in temporary list')
+            print("\nSet metadata in temporary list")
         except AttributeError:
-            print('\nFailed to set metadata. Please complete worm positions.')
+            print("\nFailed to set metadata. Please complete worm positions.")
 
 
 class EggVidGetMainGUI(QMainWindow, egg_vid_get_main_gui.Ui_MainWindow):
-
     def __init__(self, parent=None):
         super(EggVidGetMainGUI, self).__init__(parent)
         self.setupUi(self)
@@ -536,7 +597,8 @@ class EggVidGetMainGUI(QMainWindow, egg_vid_get_main_gui.Ui_MainWindow):
         auto_exposure_options = list(map(str, auto_exposure_options))
         self.autoExposureComboBox.addItems(auto_exposure_options)
         self.autoExposureComboBox.currentIndexChanged.connect(
-            self.auto_exposure_change)
+            self.auto_exposure_change
+        )
         self.autoExposureComboBox.setCurrentIndex(3)
 
         self.exposureSlider.setMinimum(1)
@@ -547,14 +609,14 @@ class EggVidGetMainGUI(QMainWindow, egg_vid_get_main_gui.Ui_MainWindow):
 
         self.startExperimentButton.clicked.connect(self.start_experiment)
 
-        self.previewThread = CamThread('', 0)
+        self.previewThread = CamThread("", 0)
         self.previewThread.changePixmap.connect(self.set_img)
         self.previewThread.start()
 
         # Test connection on startup. Won't start recording. Sends
         # default 20C value to Arduino, but this doesn't matter
         # yet since new connections to Arduino will soft reset it
-        self.arduinoThread = ArduinoThread(dac_setting, '')
+        self.arduinoThread = ArduinoThread(dac_setting, "")
         self.arduinoThread.start()
 
     def brightness_change(self):
@@ -602,17 +664,18 @@ class EggVidGetMainGUI(QMainWindow, egg_vid_get_main_gui.Ui_MainWindow):
         print(f"\nRuntime: {runtime}")
 
     def start_experiment(self):
-        experiment_dir = EXPERIMENTS_DIR + RIG_NAME + '/' + experiment_name
-        videos_dir = experiment_dir + '/' + experiment_name + '_Videos/'
-        video_frames_dir = (experiment_dir + '/' + experiment_name
-                            + '_VideoFrames/')
+        experiment_dir = EXPERIMENTS_DIR + RIG_NAME + "/" + experiment_name
+        videos_dir = experiment_dir + "/" + experiment_name + "_Videos/"
+        video_frames_dir = (
+            experiment_dir + "/" + experiment_name + "_VideoFrames/"
+        )
 
         try:
             os.mkdir(experiment_dir)
             os.mkdir(videos_dir)
             os.mkdir(video_frames_dir)
-            print('\nCreated experiment directories')
-            print('\nBeginning experiment...')
+            print("\nCreated experiment directories")
+            print("\nBeginning experiment...")
 
             global experiment_flag
             experiment_flag = True
@@ -622,30 +685,34 @@ class EggVidGetMainGUI(QMainWindow, egg_vid_get_main_gui.Ui_MainWindow):
             now = datetime.datetime.now()
             start_date = str(now)[:10]
             start_time = str(now)[11:19]
-            end_datetime = str(now + datetime.timedelta(hours=24*run_days))
+            end_datetime = str(now + datetime.timedelta(hours=24 * run_days))
             end_date = str(end_datetime)[:10]
-            meta_vals_to_add = [experiment_name, start_date, start_time,
-                                runtime, end_date]
+            meta_vals_to_add = [
+                experiment_name,
+                start_date,
+                start_time,
+                runtime,
+                end_date,
+            ]
             meta_vals = meta_vals_to_add + meta_vals_temp_list
-            meta_name = experiment_name + '_metadata.csv'
-            meta_file_str = experiment_dir + '/' + meta_name
+            meta_name = experiment_name + "_metadata.csv"
+            meta_file_str = experiment_dir + "/" + meta_name
 
-            with open(meta_file_str, 'w') as meta_file:
-                meta_writer = csv.writer(meta_file, delimiter=',')
+            with open(meta_file_str, "w") as meta_file:
+                meta_writer = csv.writer(meta_file, delimiter=",")
                 meta_writer.writerow(meta_fields)
                 meta_writer.writerow(meta_vals)
-            print('\nSaved metadata')
+            print("\nSaved metadata")
 
-            temp_data_file_name = experiment_name + '_temp_data.csv'
-            temp_data_file_str = experiment_dir + '/' + temp_data_file_name
+            temp_data_file_name = experiment_name + "_temp_data.csv"
+            temp_data_file_str = experiment_dir + "/" + temp_data_file_name
 
             self.startDisplayLabel.setText(str(now)[:19])
             self.endDisplayLabel.setText(str(end_datetime)[:19])
 
-            print('\nStarting Arduino logging...')
+            print("\nStarting Arduino logging...")
 
-            self.arduinoThread = ArduinoThread(dac_setting,
-                                               temp_data_file_str)
+            self.arduinoThread = ArduinoThread(dac_setting, temp_data_file_str)
             self.arduinoThread.start()
             # Approximate time for Arduino thread to start, set temp,
             # write temperature file, and begin recording
@@ -655,12 +722,14 @@ class EggVidGetMainGUI(QMainWindow, egg_vid_get_main_gui.Ui_MainWindow):
             self.processThread.changePixmap.connect(self.set_img)
             self.processThread.start()
         except FileExistsError:
-            print('\nExperiment already exists. Please delete the folder'
-                  '\nfrom the last attempt then click "Start Experiment"'
-                  '\nagain.')
+            print(
+                "\nExperiment already exists. Please delete the folder"
+                '\nfrom the last attempt then click "Start Experiment"'
+                "\nagain."
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     main_gui = EggVidGetMainGUI()
     main_gui.show()

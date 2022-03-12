@@ -1,3 +1,10 @@
+"""
+User Interface layout file for the main GUI of the egg-vid-get software
+
+Author: Cody Jarrett
+Organization: Phillips Lab, Institute of Ecology and Evolution,
+              University of Oregon
+"""
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'egg_vid_get_main_gui.ui'
@@ -7,6 +14,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -18,7 +26,9 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.cameraSettingsGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.cameraSettingsGroupBox.setGeometry(QtCore.QRect(10, 110, 180, 260))
+        self.cameraSettingsGroupBox.setGeometry(
+            QtCore.QRect(10, 110, 180, 260)
+        )
         font = QtGui.QFont()
         font.setPointSize(10)
         self.cameraSettingsGroupBox.setFont(font)
@@ -35,7 +45,9 @@ class Ui_MainWindow(object):
         self.gammaSlider.setGeometry(QtCore.QRect(10, 120, 161, 16))
         self.gammaSlider.setOrientation(QtCore.Qt.Horizontal)
         self.gammaSlider.setObjectName("gammaSlider")
-        self.brightnessSplitter = QtWidgets.QSplitter(self.cameraSettingsGroupBox)
+        self.brightnessSplitter = QtWidgets.QSplitter(
+            self.cameraSettingsGroupBox
+        )
         self.brightnessSplitter.setGeometry(QtCore.QRect(10, 20, 161, 21))
         self.brightnessSplitter.setOrientation(QtCore.Qt.Horizontal)
         self.brightnessSplitter.setObjectName("brightnessSplitter")
@@ -44,7 +56,9 @@ class Ui_MainWindow(object):
         self.brightnessValLabel = QtWidgets.QLabel(self.brightnessSplitter)
         self.brightnessValLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.brightnessValLabel.setObjectName("brightnessValLabel")
-        self.sharpnessSplitter = QtWidgets.QSplitter(self.cameraSettingsGroupBox)
+        self.sharpnessSplitter = QtWidgets.QSplitter(
+            self.cameraSettingsGroupBox
+        )
         self.sharpnessSplitter.setGeometry(QtCore.QRect(10, 140, 161, 21))
         self.sharpnessSplitter.setOrientation(QtCore.Qt.Horizontal)
         self.sharpnessSplitter.setObjectName("sharpnessSplitter")
@@ -57,7 +71,9 @@ class Ui_MainWindow(object):
         self.sharpnessSlider.setGeometry(QtCore.QRect(10, 160, 161, 16))
         self.sharpnessSlider.setOrientation(QtCore.Qt.Horizontal)
         self.sharpnessSlider.setObjectName("sharpnessSlider")
-        self.exposureSplitter = QtWidgets.QSplitter(self.cameraSettingsGroupBox)
+        self.exposureSplitter = QtWidgets.QSplitter(
+            self.cameraSettingsGroupBox
+        )
         self.exposureSplitter.setGeometry(QtCore.QRect(10, 210, 161, 21))
         self.exposureSplitter.setOrientation(QtCore.Qt.Horizontal)
         self.exposureSplitter.setObjectName("exposureSplitter")
@@ -73,10 +89,14 @@ class Ui_MainWindow(object):
         self.autoExposureLabel = QtWidgets.QLabel(self.cameraSettingsGroupBox)
         self.autoExposureLabel.setGeometry(QtCore.QRect(10, 180, 101, 21))
         self.autoExposureLabel.setObjectName("autoExposureLabel")
-        self.autoExposureComboBox = QtWidgets.QComboBox(self.cameraSettingsGroupBox)
+        self.autoExposureComboBox = QtWidgets.QComboBox(
+            self.cameraSettingsGroupBox
+        )
         self.autoExposureComboBox.setGeometry(QtCore.QRect(110, 180, 60, 20))
         self.autoExposureComboBox.setObjectName("autoExposureComboBox")
-        self.contrastSplitter = QtWidgets.QSplitter(self.cameraSettingsGroupBox)
+        self.contrastSplitter = QtWidgets.QSplitter(
+            self.cameraSettingsGroupBox
+        )
         self.contrastSplitter.setGeometry(QtCore.QRect(10, 60, 161, 21))
         self.contrastSplitter.setOrientation(QtCore.Qt.Horizontal)
         self.contrastSplitter.setObjectName("contrastSplitter")
@@ -116,7 +136,11 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(10)
         self.startLabel.setFont(font)
-        self.startLabel.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.startLabel.setAlignment(
+            QtCore.Qt.AlignLeading
+            | QtCore.Qt.AlignLeft
+            | QtCore.Qt.AlignVCenter
+        )
         self.startLabel.setObjectName("startLabel")
         self.startHorizLayout.addWidget(self.startLabel)
         self.startDisplayLabel = QtWidgets.QLabel(self.layoutWidget)
@@ -133,7 +157,11 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(10)
         self.endLabel.setFont(font)
-        self.endLabel.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.endLabel.setAlignment(
+            QtCore.Qt.AlignLeading
+            | QtCore.Qt.AlignLeft
+            | QtCore.Qt.AlignVCenter
+        )
         self.endLabel.setObjectName("endLabel")
         self.endHorizLayout.addWidget(self.endLabel)
         self.endDisplayLabel = QtWidgets.QLabel(self.layoutWidget1)
@@ -173,23 +201,30 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.cameraSettingsGroupBox.setTitle(_translate("MainWindow", "Camera Settings"))
+        self.cameraSettingsGroupBox.setTitle(
+            _translate("MainWindow", "Camera Settings")
+        )
         self.brightnessLabel.setText(_translate("MainWindow", "Brightness"))
         self.brightnessValLabel.setText(_translate("MainWindow", "<Val>"))
         self.sharpnessLabel.setText(_translate("MainWindow", "Sharpness"))
         self.sharpnessValLabel.setText(_translate("MainWindow", "<Val>"))
         self.exposureLabel.setText(_translate("MainWindow", "Exposure"))
         self.exposureValLabel.setText(_translate("MainWindow", "<Val>"))
-        self.autoExposureLabel.setText(_translate("MainWindow", "Auto Exposure"))
+        self.autoExposureLabel.setText(
+            _translate("MainWindow", "Auto Exposure")
+        )
         self.contrastLabel.setText(_translate("MainWindow", "Contrast"))
         self.contrastValLabel.setText(_translate("MainWindow", "<Val>"))
         self.gammaLabel.setText(_translate("MainWindow", "Gamma"))
         self.gammaValLabel.setText(_translate("MainWindow", "<Val>"))
-        self.startExperimentButton.setText(_translate("MainWindow", "Start Experiment"))
-        self.setMetadataButton.setText(_translate("MainWindow", "Set Metadata"))
+        self.startExperimentButton.setText(
+            _translate("MainWindow", "Start Experiment")
+        )
+        self.setMetadataButton.setText(
+            _translate("MainWindow", "Set Metadata")
+        )
         self.startLabel.setText(_translate("MainWindow", "Start:"))
         self.startDisplayLabel.setText(_translate("MainWindow", "N/A"))
         self.endLabel.setText(_translate("MainWindow", "End:"))
         self.endDisplayLabel.setText(_translate("MainWindow", "N/A"))
         self.runtimeLabel.setText(_translate("MainWindow", "Runtime"))
-
